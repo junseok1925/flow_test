@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Upload</title>
+    <style>
+      ul {
+        display: flex;
+        list-style-type: none;
+      }
+      li {
+        margin-right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>고정 확장자</h1>
+    <ul id="fixedExtensions">
+      <% ['bat', 'cmd', 'com', 'cpl', 'exe', 'scr', 'js'].forEach(extension => {
+      %>
+      <li>
+        <input
+          type="checkbox"
+          class="fixed-extension"
+          data-extension="<%= extension %>"
+          onchange="toggleFixedExtension('<%= extension %>')"
+        />
+        <%= extension %>
+      </li>
+      <% }); %>
+    </ul>
+
+    <h1>커스텀 확장자</h1>
+    <input type="text" id="customExtension" placeholder="확장자 입력" />
+    <button onclick="addCustomExtension()">추가</button>
+    <span id="customExtensionCount">0/200</span>
+    <ul id="customExtensions"></ul>
+
+    <h1>파일 업로드</h1>
+    <input type="file" id="fileInput" />
+    <button onclick="uploadFile()">업로드</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      const fixedExtensions = ["bat", "cmd", "com", "cpl", "exe", "scr", "js"];
+
+      // DB에서 확장자 목록을 가져와서 화면에 표시 (웹을 새로고침하여도 DB에 있는 고정확장자는 chk, 커스텀확장자는 list에 남음 DB에 없으면 반대로)
+      async function fetchExtensions() {
+        try {
+          const response = await fetch("/api/extension"); // "/api/extension" API 엔드포인트로 HTTP GET 요청
+          const result = await response.json(); // 응답 데이터를 JSON형식으로 파싱, "result" 변수에 저장한다
+          const data = result.data; // 서버에서 가져온 확장자 목록이 배열 형태로 저장
+
+          // 기존에 화면에 표시된 확장자 목록 초기화
+          const customExtensionsList =
+            document.getElementById("customExtensions");
+          while (customExtensionsList.firstChild) {
+            customExtensionsList.removeChild(customExtensionsList.firstChild);
+          }
+
+          let customExtensionCount = 0; // 커스텀 확장자의 개수를 저장할 변수
+
+          // 반복
+          // 만약 fixedExtensions(고정확장자)가 포함된 확장자가 DB에 있으면 chk박스 체크
+          data.forEach((extension) => {
+            if (fixedExtensions.includes(extension.name)) {
+              document.querySelector(
+                `.fixed-extension[data-extension="${extension.name}"]`
+              ).checked = true;
+              // 예외로 DB에 고정확장자가아닌 데이터 즉, 커스텀확장자가 있다면
+            } else {
+              customExtensionCount++; // 고정 확장자가 아니면 개수를 증가시킵니다.
+              const listItem = document.createElement("li"); //새로운 "<li>"" (list)를 생성합니다. 각 커스텀 확장자는 이 목록 아래에 표시
+              //생성한 <li>의 내용을 설정 이 부분에서는 확장자 이름과 해당 확장자를 삭제하는 버튼(<button>)을 생성. 버튼을 클릭하면 deleteCustomExtension 함수가 호출
+              listItem.innerHTML = `
+                    ${extension.name} <button onclick="deleteCustomExtension('${extension.name}')">x</button>
+                `;
+              //이전에 초기화한 customExtensions 목록에 새로 생성한 <li>를 추가합니다. 이렇게 하면 커스텀 확장자가 화면에 차례로 표시
+              document.getElementById("customExtensions").appendChild(listItem);
+            }
+          });
+
+          // 화면에 커스텀 확장자의 개수를 표시합니다.
+          document.getElementById(
+            "customExtensionCount"
+          ).textContent = `${customExtensionCount}/200`;
+        } catch (error) {
+          console.error("확장자를 가져오는데 실패했습니다.", error);
+        }
+      }
+
+      async function toggleFixedExtension(extension) {
+        const isChecked = document.querySelector(
+          `.fixed-extension[data-extension="${extension}"]`
+        ).checked;
+        // 만약 체크박스를 check할 경우 서버에게 POST /api/extension 요청
+        if (isChecked) {
+          try {
+            const response = await fetch("/api/extension", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name: extension }),
+            });
+            const data = await response.json();
+          } catch (error) {
+            console.error("확장자를 추가하는데 실패했습니다.", error);
+          }
+        // 만약 체크박스를 uncheck할 경우 서버에게 DELETE /api/extension 요청
+      } else {
+          try {
+            const response = await fetch(`/api/extension/${extension}`, {
+              method: "DELETE",
+            });
+            const data = await response.json();
+          } catch (error) {
+            console.error("확장자를 삭제하는데 실패했습니다.", error);
+          }
+        }
+      }
+
+      async function addCustomExtension() {
+        const extensionName = document
+          .getElementById("customExtension")
+          .value.trim(); // 입력값의 양 끝 공백을 제거합니다.
+        // 빈칸으로 추가할 경우 
+        if (extensionName === "") {
+          alert("차단할 확장자명을 입력해주세요.");
+          return; // 빈칸 입력 시 추가를 막습니다.
+        }
+        // 추가할 커스텀확장자명에 고정 확장자명을 입력할 경우
+        if (!fixedExtensions.includes(extensionName)) {
+          try {
+            const response = await fetch("/api/extension", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name: extensionName }),
+            });
+
+            if (response.status === 200) {
+              const data = await response.json();
+              fetchExtensions(); // 확장자를 추가한 후 목록을 다시 불러옵니다.
+              document.getElementById("customExtension").value = ""; // 입력칸을 비웁니다.
+            } else {
+              const errorData = await response.json();
+              alert(errorData.errMsg || "확장자를 추가하는데 실패했습니다.");
+            }
+          } catch (error) {
+            console.error("확장자를 추가하는데 실패했습니다.", error);
+            alert("확장자를 추가하는데 오류가 발생했습니다.");
+          }
+        } else {
+          alert("이 확장자는 이미 존재합니다.");
+        }
+      }
+      // 커스텀 확장자 삭제버튼
+      async function deleteCustomExtension(name) {
+        try {
+          const response = await fetch(`/api/extension/${name}`, {
+            method: "DELETE",
+          });
+          const data = await response.json();
+          fetchExtensions(); // 확장자를 삭제한 후 목록을 다시 불러옵니다.
+        } catch (error) {
+          console.error("확장자를 삭제하는데 실패했습니다.", error);
+        }
+      }
+
+      // 파일 업로더
+      async function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+        // 파일 입력 필드에 선택된 파일들의 목록을 나타내며, 배열 형태로 저장된다. 여기서 [0]은 선택한 파일 중 첫 번째 파일을 의미 즉, 여러개를 선택하면 첫번째 파일만 업로드 - 후에 여러개를 올릴 수 있게 한번 도전
+        const file = fileInput.files[0];
+
+        if (!file) {
+          alert("파일을 선택해주세요.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await fetch("/api/upload_file", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.status === 200) {
+            const data = await response.json();
+            alert(`파일 업로드 성공!`);
+          } else {
+            const errorData = await response.json();
+            alert(errorData.errMsg || "파일 업로드 실패");
+          }
+        } catch (error) {
+          console.error("파일 업로드 중 오류 발생", error);
+          alert("이 확장자는 업로드할 수 없습니다");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchExtensions);
+    </script>
+  </body>
+</html>

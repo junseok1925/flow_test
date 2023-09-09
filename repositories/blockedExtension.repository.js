@@ -31,9 +31,9 @@ class BlockedExtensionRepository {
     }
   };
 
-  delete = async (id) => {
+  delete = async (name) => {
     try {
-      return await BlockedExtension.destroy({ where: { id } });
+      return await BlockedExtension.destroy({ where: { name } });
     } catch (err) {
       console.error(err);
       throw err;

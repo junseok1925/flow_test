@@ -4,6 +4,6 @@ const BlockedExtensionController = require('../controllers/blockedExtension.cont
 
 router.get('/extension', BlockedExtensionController.getAllExtensions);
 router.post('/extension', BlockedExtensionController.addExtension);
-router.delete('/extension/:id', BlockedExtensionController.deleteExtension);
+router.delete('/extension/:name', BlockedExtensionController.deleteExtension);
 
 module.exports = router;

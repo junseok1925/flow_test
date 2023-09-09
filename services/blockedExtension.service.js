@@ -17,8 +17,8 @@ class BlockedExtensionService {
     return await blockedExtensionRepository.getOne(name);
   };
 
-  deleteExtension = async (id) => {
-    return await blockedExtensionRepository.delete(id);
+  deleteExtension = async (name) => {
+    return await blockedExtensionRepository.delete(name);
   };
 }
 
