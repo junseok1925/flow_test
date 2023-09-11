@@ -6,9 +6,6 @@ const { v4: uuidv4 } = require('uuid');
 const blockedExtensionService = require('../services/blockedExtension.service');
 require("dotenv").config();
 
-// .env에서 필요한 환경 변수:
-// AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BUCKET, AWS_ENDPOINT_REGION
-
 const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
