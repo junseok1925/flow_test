@@ -45,7 +45,7 @@ const upload_file = multer({
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: (req, file, callback) => {
             const today = getToDate();
-            const randomNum = getRandomNum();
+            const uniqueID = uuidv4();
             const extension = path.extname(file.originalname).toLowerCase();
             const nameWithoutExtension = path.basename(file.originalname, extension);
 

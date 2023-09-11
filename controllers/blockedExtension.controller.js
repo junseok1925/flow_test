@@ -19,14 +19,11 @@ class BlockedExtensionController {
       // name 값이 없거나 영어 알파벳이 아닌 경우의 검사
       if (!name || !/^[A-Za-z]+$/.test(name)) {
         return res.status(400).json({
-          errMsg: "차단할 확장자명을 한글이 아닌 영문으로 입력해주세요",
+          errMsg: "차단할 확장자명 입력은 공백이나 영문 외에 허용되지않습니다.",
         });
       }
       const extension = await blockedExtensionService.addExtension(name);
-      res.status(200).json({ data: extension });
-      if (!name) {
-        res.status(400).json("차단할 확장자명을 입력해주세요.");
-      }
+      res.status(200).json({ data: extension});
     } catch (error) {
       if (error.message === "이미 등록된 확장자") {
         return res.status(400).json({ errMsg: error.message });
