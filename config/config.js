@@ -1,4 +1,3 @@
-// config.js
 require('dotenv').config();
 
 module.exports = {
@@ -24,3 +23,5 @@ module.exports = {
     dialect: process.env.DB_PROD_DIALECT
   }
 };
+
+// .env파일의 환경변수 사용을 위해 .json파일을 .js파일로 변경

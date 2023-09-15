@@ -1,9 +1,11 @@
 const blockedExtensionService = require("../services/blockedExtension.service");
 
 class BlockedExtensionController {
+
   // 차단된 확장자 확인
   getAllExtensions = async (req, res) => {
     try {
+      // 이미 추가된 확장자를 조회하여 extension 변수에 저장
       const extension = await blockedExtensionService.getAllExtensions();
       res.status(200).json({ data: extension });
     } catch (error) {

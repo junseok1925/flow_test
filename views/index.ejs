@@ -181,8 +181,18 @@
           return;
         }
 
+        // 만약 파일을 여러게 업로드 할 수 있게 할 경우 -> 선택한 파일을 0개만 아니면 된다
+        //  if (files.length === 0) {
+        // alert("파일을 선택해주세요.");
+        // return;
+
         const formData = new FormData();
         formData.append("file", file);
+
+        // const formData = new FormData();
+        // for (let i = 0; i < files.length; i++) {
+        // formData.append("files", files[i]); // 여러 파일을 FormData에 추가
+        // }
 
         try {
           const response = await fetch("/api/upload_file", {

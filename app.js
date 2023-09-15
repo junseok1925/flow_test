@@ -2,9 +2,17 @@ const express = require('express');
 const app = express();
 const router = require('./routers');
 const expressLayouts = require('express-ejs-layouts'); // EJS 설정
+var cors = require('cors');
 
 require('dotenv').config();
 const port = process.env.PORT
+
+app.use(
+  cors({
+    origin: ['https://www.fileuploadhelper.net/', 'http://3.35.3.14','localhost:3000'],
+    credentials: true,
+  })
+);
 
 app.set('view engine', 'ejs'); // EJS를 뷰 엔진으로 설정
 app.use(expressLayouts); // EJS 레이아웃을 사용하기 위한 미들웨어
