@@ -6,7 +6,6 @@ const { v4: uuidv4 } = require("uuid");
 const blockedExtensionService = require("../services/blockedExtension.service");
 require("dotenv").config();
 
-// AWS S3 설정
 const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
